@@ -12,13 +12,6 @@ func DeleteS(s string, idx int) string {
 	return result
 }
 
-func Exp(m, n int) int {
-	for i := 0; i < n; i++ {
-		m *= n
-	}
-	return m
-}
-
 func PermuteS(s string) []string {
 	if len(s) == 1 {
 		return []string{s}
@@ -34,14 +27,15 @@ func PermuteS(s string) []string {
 }
 
 func ProblemD(s string) string {
-	// string -> []int
-	// ex. "1234" -> []int{1, 2, 3, 4}
-	si := []int{}
-	for i := 0; i < len(s); i++ {
-		v, _ := strconv.Atoi(string(s[i]))
-		si = append(si, v)
+
+	permute := PermuteS(s)
+	for _, v := range permute {
+		n, _ := strconv.Atoi(v)
+		if n%8 == 0 {
+			return "Yes"
+		}
 	}
-	return ""
+	return "No"
 }
 
 func main() {

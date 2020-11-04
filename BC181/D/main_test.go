@@ -7,6 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestProblemD(t *testing.T) {
+	t.Run("Example 1", func(t *testing.T) {
+		assert.Equal(t, "Yes", ProblemD("1234"))
+	})
+	t.Run("Example 2", func(t *testing.T) {
+		assert.Equal(t, "No", ProblemD("1333"))
+	})
+	t.Run("Example 3", func(t *testing.T) {
+		assert.Equal(t, "Yes", ProblemD("8"))
+	})
+
+}
+
 func TestDeleteS(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		assert.Equal(t, "ac", DeleteS("abc", 1))
