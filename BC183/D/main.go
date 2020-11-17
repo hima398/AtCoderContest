@@ -1,51 +1,42 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
 
-type Span struct {
-	start  int
-	end    int
-	amount int
+var sc = bufio.NewScanner(os.Stdin)
+
+func nextInt() int {
+	sc.Scan()
+	i, _ := strconv.Atoi(sc.Text())
+	return i
 }
 
 func main() {
+	buf := make([]byte, 1024*1024)
+	sc.Buffer(buf, bufio.MaxScanTokenSize)
+	sc.Split(bufio.ScanWords)
+
 	// 1 <= n <= 2 * 10**5
 	// 1 <= w
-	var n, w int
-	fmt.Scan(&n, &w)
+	n, w := nextInt(), nextInt()
 	// 0 < si < ti < 2 * 10**5
-	s := make([]int, n)
-	t := make([]int, n)
+	a := make([]int, 200001)
 	// pi <= 10**9 int64?
-	p := make([]int, n)
-	m := make(map[int]*Span)
 	for i := 0; i < n; i++ {
-		if m[s[i]] == nil {
-			if p[i] > w {
-				fmt.Println("No")
-				return
-			}
-			span := &Span{s[i], t[i], p[i]}
-			m[span.start] = span
-		} else {
-			// m[si] exist
-			idx := s[i]
-			next := idx
-			for idx < t[i] {
-				m[idx].amount += p[i]
-				if m[idx].amount > w {
-					fmt.Println("No")
-					return
-				}
-				next = m[idx].end + 1
-				idx = m[idx].end
-			}
-			if next < t[i] {
-				span := &Span{next, t[i], p[i]}
-				m[next] = span
-			}
+		s, t, p := nextInt(), nextInt(), nextInt()
+		a[s] += p
+		a[t] -= p
+	}
+	for i := 0; i < 200000; i++ {
+		a[i+1] += a[i]
+		if a[i] > w {
+			fmt.Println("No")
+			return
 		}
 	}
-	fmt.Println(m)
 	fmt.Println("Yes")
 }
