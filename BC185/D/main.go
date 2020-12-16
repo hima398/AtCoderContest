@@ -64,6 +64,10 @@ func main() {
 	sc.Split(bufio.ScanWords)
 
 	N, M := nextInt(), nextInt()
+	if M == 0 {
+		fmt.Println(1)
+		return
+	}
 	A := make([]int, M+1)
 	A[0] = 0
 	for i := 1; i <= M; i++ {
