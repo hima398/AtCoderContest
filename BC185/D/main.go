@@ -74,22 +74,36 @@ func main() {
 		A[i] = nextInt()
 	}
 	sort.IntSlice(A).Sort()
+
 	k := 9223372036854775807
-	for i := 1; i <= M; i++ {
+	for i := 1; i < len(A); i++ {
 		if A[i]-A[i-1]-1 == 0 {
 			continue
 		}
 		k = Min(k, A[i]-A[i-1]-1)
 	}
-	if k == 0 {
+	// 白色のマスが無い
+	if k == 9223372036854775807 {
 		fmt.Println(0)
 		return
 	}
-	var result int64
-	for i := 1; i <= M; i++ {
-		result += int64(float64(A[i]-A[i-1]-1) + 0.5/float64(k))
+	var result int
+	for i := 1; i < len(A); i++ {
+		whites := A[i] - A[i-1] - 1
+		if whites%k == 0 {
+			result += whites / k
+		} else {
+			result += (whites / k) + 1
+		}
 	}
-	result += int64(float64(N-A[M]-1) + 0.5/float64(k))
-	fmt.Println(k)
+	if A[M] != N {
+		whites := N - A[M]
+		if whites%k == 0 {
+			result += whites / k
+		} else {
+			result += (whites / k) + 1
+		}
+	}
+	//	fmt.Println(k)
 	fmt.Println(result)
 }
