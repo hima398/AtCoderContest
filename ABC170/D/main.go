@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -169,6 +170,11 @@ func SloveHonestly(n int, a []int) int {
 		}
 	}
 	return ans
+}
+
+func Solve(n int, a []int) {
+	sort.Ints(a)
+	d := make([]int, a[n-1])
 }
 
 func main() {
