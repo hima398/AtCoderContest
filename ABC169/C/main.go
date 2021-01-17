@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -27,6 +28,6 @@ func main() {
 	sc.Split(bufio.ScanWords)
 
 	a, b := nextInt(), nextFloat()
-	ib := int(b * 100)
-	fmt.Println(a * ib / 100)
+	ib := int64(math.Round(b * 100))
+	fmt.Println(int64(a) * ib / 100)
 }
