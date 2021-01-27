@@ -97,8 +97,8 @@ func main() {
 	sc.Split(bufio.ScanWords)
 
 	//TestFloatingPoint()
-	WrongAnswer()
-	//Solve()
+	//WrongAnswer()
+	Solve()
 }
 
 func nextInt() int {
