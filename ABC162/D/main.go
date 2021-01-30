@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 )
 
@@ -15,21 +14,21 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	_ = nextInt()
+	n := nextInt()
 	s := nextString()
-	m := make(map[string][]int)
-	for i, _ := range s {
-		m[string(s[i])] = append(m[string(s[i])], i+1)
+	m := make(map[string]int)
+	for i := 0; i < n; i++ {
+		m[string(s[i])]++
 	}
-	ans := 0
-	for _, vr := range m["R"] {
-		for _, vg := range m["G"] {
-			for _, vb := range m["B"] {
-				v := []int{vr, vg, vb}
-				sort.Ints(v)
-				if v[2]-v[1] != v[1]-v[0] {
-					ans++
-				}
+	ans := m["R"] * m["G"] * m["B"]
+	for i := 0; i < n-1; i++ {
+		for j := i; j < n; j++ {
+			k := 2*j - i
+			if k >= n {
+				continue
+			}
+			if s[k] != s[j] && s[j] != s[i] && s[k] != s[i] {
+				ans--
 			}
 		}
 	}
