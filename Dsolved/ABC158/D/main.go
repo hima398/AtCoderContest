@@ -26,6 +26,7 @@ func main() {
 
 	s := nextString()
 	q := nextInt()
+	// 文字連結のパフォーマンスアップのため使用
 	var lb, rb strings.Builder
 	IsReversed := false
 	for i := 0; i < q; i++ {
