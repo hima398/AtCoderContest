@@ -97,7 +97,14 @@ func SolveBFS(n, x, y int) []int {
 }
 
 func Solve(n, x, y int) []int {
-	ans := make([]int, n-1)
+
+	ans := make([]int, n)
+	for i := 1; i < n; i++ {
+		for j := i; j <= n; j++ {
+			min := Min(2001, Min(Abs(j-i), Min(Abs(x-i)+Abs(j-y)+1, Abs(y-i)+Abs(j-x)+1)))
+			ans[min]++
+		}
+	}
 	return ans
 }
 
@@ -107,8 +114,8 @@ func main() {
 	sc.Split(bufio.ScanWords)
 
 	n, x, y := nextInt(), nextInt(), nextInt()
-	ans := SolveBFS(n, x, y)
-	//ans := Solve(n, x, y)
+	//ans := SolveBFS(n, x, y)
+	ans := Solve(n, x, y)
 
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
@@ -121,4 +128,18 @@ func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
