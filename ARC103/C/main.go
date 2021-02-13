@@ -26,7 +26,14 @@ func (l List) Swap(i, j int) {
 }
 
 func (l List) Less(i, j int) bool {
-	return l[i].V > l[i].V
+	return l[i].V > l[j].V
+}
+
+func (l List) Print() {
+	for i := 0; i < l.Len(); i++ {
+		fmt.Printf("K:%d, V:%d\n", l[i].K, l[i].V)
+	}
+
 }
 
 func main() {
@@ -60,23 +67,17 @@ func main() {
 	sort.Sort(lOdd)
 	sort.Sort(lEven)
 
+	//lOdd.Print()
+	//lEven.Print()
 	o1 := lOdd[0]
 	e1 := lEven[0]
 	var ans int
 	if o1.K == e1.K {
-		io := 1
-		ie := 1
-		if lOdd.Len() == 1 {
-			io = 0
-		}
-		if lEven.Len() == 1 {
-			ie = 0
-		}
-		if io == 0 && ie == 0 {
-			ans = n / 2
+		if lOdd.Len() == 1 || lEven.Len() == 1 {
+			ans = Min(lOdd[0].V, lEven[0].V)
 		} else {
-			o2 := lOdd[io]
-			e2 := lEven[ie]
+			o2 := lOdd[1]
+			e2 := lEven[1]
 			ans = Min(n-o1.V-e2.V, n-o2.V-e1.V)
 		}
 	} else {
