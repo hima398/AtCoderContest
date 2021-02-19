@@ -47,13 +47,3 @@ func Abs(x int) int {
 	}
 	return x
 }
-
-func Combination(N, K int) int {
-	if K <= 0 {
-		return 1
-	}
-	if K == 1 {
-		return N
-	}
-	return Combination(N, K-1) * (N + 1 - K) / K
-}
