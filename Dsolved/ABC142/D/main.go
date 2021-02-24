@@ -14,21 +14,22 @@ const rootMax = int(1e6)
 
 var soe [rootMax + 1]bool
 
-func CommonPrime(x, y int) []int {
-	if x == 1 || y == 1 {
-		return []int{}
-	}
-	m := make(map[int]bool)
+func PrimeFactorization(n int) map[int]int {
+
+	ret := make(map[int]int)
 	for i := 2; i <= rootMax; i++ {
-		if x%i == 0 && y%i == 0 {
-			if !soe[i] {
-				m[i] = true
+		if !soe[i] {
+			for n%i == 0 {
+				ret[i]++
+				n /= i
 			}
 		}
+		if n == 1 {
+			break
+		}
 	}
-	var ret []int
-	for k := range m {
-		ret = append(ret, k)
+	if n != 1 {
+		ret[n]++
 	}
 	return ret
 }
@@ -52,10 +53,17 @@ func main() {
 			soe[j] = true
 		}
 	}
-	d := CommonPrime(a, b)
-	//fmt.Println(d)
+	pfa := PrimeFactorization(a)
+	pfb := PrimeFactorization(b)
+	//fmt.Println(pfa)
+	//fmt.Println(pfb)
 	//fmt.Println(soe)
-	ans := 1 + len(d)
+	ans := 1
+	for k := range pfa {
+		if pfb[k] > 0 {
+			ans++
+		}
+	}
 
 	fmt.Println(ans)
 }

@@ -15,10 +15,6 @@ func FirstSolve() {
 	if b == 0 {
 		fmt.Println(1)
 	}
-	//bb := big.NewInt(6535897)
-	//cc := big.NewInt(9323846)
-	//bbcc := bb.Exp(bb, cc, big.NewInt(4))
-	//fmt.Println(bbcc.String())
 	if z == '0' || z == '1' || z == '5' || z == '6' {
 		fmt.Println(string(z))
 	} else if z == '4' || z == '9' {
@@ -88,7 +84,16 @@ func FirstSolve() {
 
 func Solve(a, b, c int) int {
 	a %= 10
-	ans := 0
+	p := []int{1, 1, 4, 4, 2, 1, 1, 4, 4, 2}
+	bc := Pow(b, c, p[a])
+	if bc == 0 {
+		bc = p[a]
+	}
+	ans := 1
+	for i := 0; i < bc; i++ {
+		ans *= a
+		ans %= 10
+	}
 	return ans
 }
 
