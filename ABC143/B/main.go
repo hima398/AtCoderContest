@@ -14,8 +14,17 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	a, b := nextInt(), nextInt()
-	ans := Max(a-2*b, 0)
+	n := nextInt()
+	d := make([]int, n)
+	for i := 0; i < n; i++ {
+		d[i] = nextInt()
+	}
+	ans := 0
+	for i := 0; i < n-1; i++ {
+		for j := i + 1; j < n; j++ {
+			ans += d[i] * d[j]
+		}
+	}
 	fmt.Println(ans)
 }
 
@@ -23,11 +32,4 @@ func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
-}
-
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
 }

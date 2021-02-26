@@ -14,8 +14,14 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	a, b := nextInt(), nextInt()
-	ans := Max(a-2*b, 0)
+	n := nextInt()
+	s := nextString()
+	ans := 1
+	for i := 0; i < n-1; i++ {
+		if s[i] != s[i+1] {
+			ans++
+		}
+	}
 	fmt.Println(ans)
 }
 
@@ -25,9 +31,7 @@ func nextInt() int {
 	return i
 }
 
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
+func nextString() string {
+	sc.Scan()
+	return sc.Text()
 }
