@@ -8,21 +8,14 @@ import (
 	"strconv"
 )
 
+const Mod = 1000000007
+
 var sc = bufio.NewScanner(os.Stdin)
 
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
-
-	n, m, q := nextInt(), nextInt(), nextInt()
-	a := make([]int, q)
-	b := make([]int, q)
-	c := make([]int, q)
-	d := make([]int, q)
-	for i := 0; i < q; i++ {
-		a[i], b[i], c[i], d[i] = nextInt(), nextInt(), nextInt(), nextInt()
-	}
 
 }
 
@@ -58,15 +51,41 @@ func Max(x, y int) int {
 	return x
 }
 
+func Floor(x, y int) int {
+	return x / y
+}
+
+func Ceil(x, y int) int {
+	return (x + y - 1) / y
+}
+
 func Gcd(x, y int) int {
+	if x == 0 {
+		return y
+	}
 	if y == 0 {
 		return x
+	}
+	if x < y {
+		x, y = y, x
 	}
 	return Gcd(y, x%y)
 }
 
 func Lcm(x, y int) int {
 	return x * y / Gcd(x, y)
+}
+
+func Pow(x, y, p int) int {
+	ret := 1
+	for y > 0 {
+		if y%2 == 1 {
+			ret = ret * x % p
+		}
+		y >>= 1
+		x = x * x % p
+	}
+	return ret
 }
 
 func Permutation(N, K int) int {
@@ -100,9 +119,73 @@ func DivideSlice(A []int, K int) ([]int, []int, error) {
 	return A[:K+1], A[K:], nil
 }
 
+type IntQueue struct {
+	q []int
+}
+
+func NewIntQueue() *IntQueue {
+
+	return new(IntQueue)
+}
+func (this *IntQueue) Push(v int) {
+	this.q = append(this.q, v)
+}
+
+func (this *IntQueue) Pop() (int, error) {
+	if this.Size() == 0 {
+		return -1, errors.New("")
+	}
+	ret := this.q[0]
+	this.q = this.q[1:]
+	return ret, nil
+}
+
+func (this *IntQueue) Size() int {
+	return len(this.q)
+}
+
+func (this *IntQueue) PrintQueue() {
+	fmt.Println(this.q)
+}
+
 type Pos struct {
 	X int
 	Y int
+	D int
+}
+
+type Queue struct {
+	ps []Pos
+}
+
+func NewQueue() *Queue {
+	return new(Queue)
+}
+
+func (this *Queue) Push(p Pos) {
+	this.ps = append(this.ps, p)
+}
+
+func (this *Queue) Pop() *Pos {
+	if len(this.ps) == 0 {
+		return nil
+	}
+	p := this.ps[0]
+	this.ps = this.ps[1:]
+	return &p
+}
+
+func (this *Queue) Find(x, y int) bool {
+	for _, v := range this.ps {
+		if x == v.X && y == v.Y {
+			return true
+		}
+	}
+	return false
+}
+
+func (this *Queue) Size() int {
+	return len(this.ps)
 }
 
 type UnionFind struct {

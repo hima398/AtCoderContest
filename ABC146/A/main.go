@@ -17,16 +17,6 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	n := nextInt()
-	a := make([]int, n)
-	for i := 0; i < n; i++ {
-		a[i] = nextInt()
-	}
-
-	ans := make([]int, n)
-	for i:=0; i<n; i++ {
-		
-	}
 }
 
 func nextInt() int {
@@ -59,6 +49,14 @@ func Max(x, y int) int {
 		return y
 	}
 	return x
+}
+
+func Floor(x, y int) int {
+	return x / y
+}
+
+func Ceil(x, y int) int {
+	return (x + y - 1) / y
 }
 
 func Gcd(x, y int) int {
