@@ -55,6 +55,9 @@ func main() {
 		ok := true
 		for i := 1; i <= ln; i++ {
 			for j := 1; j <= a[i]; j++ {
+				if bits&(1<<(i-1)) == 0 {
+					continue
+				}
 				if (bits>>(x[i][j]-1)&1)^y[i][j] == 1 {
 					ok = false
 				}
