@@ -8,7 +8,59 @@ import (
 	"strconv"
 )
 
-const Mod = 1000000007
+type Item struct {
+	f int
+	t int
+	i int
+}
+
+type Queue struct {
+	q []Item
+}
+
+func NewQueue() *Queue {
+
+	return new(Queue)
+}
+func (this *Queue) Push(v Item) {
+	this.q = append(this.q, v)
+}
+
+func (this *Queue) Pop() Item {
+	if this.Size() == 0 {
+		return Item{0, 0, 0}
+	}
+	ret := this.q[0]
+	this.q = this.q[1:]
+	return ret
+}
+
+func (this *Queue) Size() int {
+	return len(this.q)
+}
+
+func (this *Queue) PrintQueue() {
+	for _, v := range this.q {
+		fmt.Println(v)
+	}
+}
+
+func DeleteElement(n []int, v int) []int {
+	var ret []int
+	idx := 0
+	for idx < len(n) {
+		if n[idx] == v {
+			break
+		}
+		idx++
+	}
+	if idx > len(n) {
+		return n
+	}
+	ret = append(ret, n[:idx]...)
+	ret = append(ret, n[idx+1:]...)
+	return ret
+}
 
 var sc = bufio.NewScanner(os.Stdin)
 
@@ -17,6 +69,62 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
+	n := nextInt()
+	nodes := make(map[int][]Item)
+	//e := make([]int, n-1)
+	for i := 0; i < n-1; i++ {
+		a, b := nextInt(), nextInt()
+		nodes[a] = append(nodes[a], Item{a, b, i})
+		nodes[b] = append(nodes[b], Item{b, a, i})
+	}
+	//fmt.Println(nodes)
+	k := 0
+	for _, v := range nodes {
+		k = Max(k, len(v))
+	}
+	//fmt.Println(k)
+	colors := make([]int, k)
+	for i := 0; i < k; i++ {
+		colors[i] = i + 1
+	}
+	ans := make([]int, n-1)
+	v := make([]bool, n) // visited
+	q := NewQueue()
+	q.Push(Item{1, 0, 0})
+	v[0] = true
+	for {
+		// parent
+		p := q.Pop()
+		cc := make([]int, k)
+		copy(cc, colors)
+		// nodeに繋がる道に色を塗る
+		for _, e := range nodes[p.f] {
+			//fmt.Println(p.f, e, cc)
+			if ans[e.i] != 0 {
+				cc = DeleteElement(cc, ans[e.i])
+			} else {
+				ans[e.i] = cc[0]
+				cc = DeleteElement(cc, cc[0])
+			}
+		}
+		// 次のnodeをキューに積む
+		for _, e := range nodes[p.f] {
+			if !v[e.t-1] {
+				q.Push(Item{e.t, 0, 0})
+			}
+			v[e.t-1] = true
+		}
+
+		if q.Size() == 0 {
+			break
+		}
+	}
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+	fmt.Fprintln(out, k)
+	for _, v := range ans {
+		fmt.Fprintln(out, v)
+	}
 }
 
 func nextInt() int {
@@ -119,73 +227,10 @@ func DivideSlice(A []int, K int) ([]int, []int, error) {
 	return A[:K+1], A[K:], nil
 }
 
-type IntQueue struct {
-	q []int
-}
-
-func NewIntQueue() *IntQueue {
-
-	return new(IntQueue)
-}
-func (this *IntQueue) Push(v int) {
-	this.q = append(this.q, v)
-}
-
-func (this *IntQueue) Pop() (int, error) {
-	if this.Size() == 0 {
-		return -1, errors.New("")
-	}
-	ret := this.q[0]
-	this.q = this.q[1:]
-	return ret, nil
-}
-
-func (this *IntQueue) Size() int {
-	return len(this.q)
-}
-
-func (this *IntQueue) PrintQueue() {
-	fmt.Println(this.q)
-}
-
 type Pos struct {
 	X int
 	Y int
 	D int
-}
-
-type Queue struct {
-	ps []Pos
-}
-
-func NewQueue() *Queue {
-	return new(Queue)
-}
-
-func (this *Queue) Push(p Pos) {
-	this.ps = append(this.ps, p)
-}
-
-func (this *Queue) Pop() *Pos {
-	if len(this.ps) == 0 {
-		return nil
-	}
-	p := this.ps[0]
-	this.ps = this.ps[1:]
-	return &p
-}
-
-func (this *Queue) Find(x, y int) bool {
-	for _, v := range this.ps {
-		if x == v.X && y == v.Y {
-			return true
-		}
-	}
-	return false
-}
-
-func (this *Queue) Size() int {
-	return len(this.ps)
 }
 
 type UnionFind struct {
