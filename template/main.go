@@ -88,6 +88,10 @@ func Pow(x, y, p int) int {
 	return ret
 }
 
+func Inv(x, p int) int {
+	return Pow(x, p-2, p)
+}
+
 func Permutation(N, K int) int {
 	v := 1
 	if 0 < K && K <= N {
@@ -105,6 +109,9 @@ func Factional(N int) int {
 }
 
 func Combination(N, K int) int {
+	if K == 0 {
+		return 1
+	}
 	if K == 1 {
 		return N
 	}
