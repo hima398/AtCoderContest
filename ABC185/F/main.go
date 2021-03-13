@@ -10,42 +10,74 @@ import (
 
 var sc = bufio.NewScanner(os.Stdin)
 
+func SolveSlice(n, q int) {
+	const INF = 1<<32 - 1
+	k := 1
+	for k < n {
+		k = k << 1
+	}
+
+	size := 2*k - 1
+	st := make([]int, size)
+	for i := 0; i < len(st); i++ {
+		st[i] = INF
+	}
+	var Update func(i, x int)
+	Update = func(i, x int) {
+		i += k - 1
+		if st[i] == INF {
+			st[i] = x
+		} else {
+			st[i] ^= x
+		}
+		for i > 0 {
+			i = (i - 1) / 2
+			if st[i*2+1] != INF && st[i*2+2] != INF {
+				st[i] = st[i*2+1] ^ st[i+2+2]
+			}
+		}
+	}
+	var RangeXor func(a, b, i, l, r int) int
+	RangeXor = func(a, b, i, l, r int) int {
+		//[a, b)と[l, r)が交差
+		if r <= a || b <= l {
+			return INF
+		}
+		if a <= l && b >= r {
+			return st[i]
+		} else {
+			vl := RangeXor(a, b, 2*i+1, l, (l+r)/2)
+			vr := RangeXor(a, b, 2*k+2, (l+r)/2, r)
+			if vl != INF && vr != INF {
+				return vl ^ vr
+			} else {
+				return INF
+			}
+		}
+	}
+
+	for i := 0; i < n; i++ {
+		a := nextInt()
+		Update(i, a)
+	}
+	for i := 0; i < q; i++ {
+		t, x, y := nextInt(), nextInt(), nextInt()
+		if t == 1 {
+
+		} else {
+			// t == 2
+		}
+	}
+}
+
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
 	n, q := nextInt(), nextInt()
-	a := make([]int, n)
-	sa := make([]int, n+1)
-	a[0] = nextInt()
-	for i := 1; i < n; i++ {
-		a[i] = nextInt()
-		sa[i] ^= sa[i-1] ^ a[i-1]
-	}
-	fmt.Println("init", sa)
-	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
-	for i := 0; i < q; i++ {
-		t, x, y := nextInt(), nextInt(), nextInt()
-		if t == 1 {
-			a[x-1] ^= y
-			sa[x] = sa[x-1] ^ y
-			for j := x; j <= n; j++ {
-			}
-			fmt.Fprintln(out, sa)
-		} else {
-			// t == 2
-			/*
-				if x == y {
-					fmt.Fprintln(out, a[x]^a[x])
-				} else {
-			*/
-			ans := sa[y] ^ sa[x-1]
-			fmt.Fprintln(out, ans)
-			//			}
-		}
-	}
+	fmt.Println(SolveSlice(n, q))
+
 }
 
 func nextInt() int {
