@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCombination(t *testing.T) {
 	type args struct {
@@ -24,5 +26,13 @@ func TestCombination(t *testing.T) {
 				t.Errorf("Combination() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestIntQueue_Pop(t *testing.T) {
+	q := NewIntQueue()
+	v, e := q.Pop()
+	if e == nil {
+		t.Errorf("Pop() = %v, want %v, err", v, -1)
 	}
 }

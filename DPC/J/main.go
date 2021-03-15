@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-const Mod = 1000000007
-
 var sc = bufio.NewScanner(os.Stdin)
 
 func main() {
@@ -17,6 +15,24 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
+	const mn = 300
+	var dp [mn][mn][mn]float64
+	n := nextInt()
+	m := make(map[int]int)
+	for i := 0; i < n; i++ {
+		a := nextInt()
+		m[a]++
+	}
+	var F func(i, j, k int) float64
+	fn := float64(n)
+	F = func(i, j, k int) float64 {
+		if dp[i][j][k] > 0 {
+			return dp[i][j][k]
+		}
+		dp[i][j][k] = 1.0 + F(i-1, j, k)/fn + F(i, j-1, k)/fn + F(i, j, k-1)/fn
+		return 0.0
+	}
+	fmt.Println(F(m[1], m[2], m[3]))
 }
 
 func nextInt() int {

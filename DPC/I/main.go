@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,6 +16,33 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
+	n := nextInt()
+	p := make([]float64, n+1)
+	for i := 1; i <= n; i++ {
+		p[i] = nextFloat64()
+	}
+	dp := make([][]float64, n+1)
+	for i := 0; i <= n; i++ {
+		dp[i] = make([]float64, n+1)
+	}
+	dp[1][0] = 1.0 - p[1]
+	dp[1][1] = p[1]
+	for i := 2; i <= n; i++ {
+		for j := 0; j <= i; j++ {
+			if j == 0 {
+				dp[i][0] = dp[i-1][0] * (1.0 - p[i])
+			} else if j == i {
+				dp[i][i] = dp[i-1][i-1] * p[i]
+			} else {
+				dp[i][j] = dp[i-1][j]*(1.0-p[i]) + dp[i-1][j-1]*p[i]
+			}
+		}
+	}
+	ans := 0.0
+	for j := Ceil(n, 2); j <= n; j++ {
+		ans += dp[n][j]
+	}
+	fmt.Println(ans)
 }
 
 func nextInt() int {
@@ -25,138 +51,13 @@ func nextInt() int {
 	return i
 }
 
-func nextString() string {
+func nextFloat64() float64 {
 	sc.Scan()
-	return sc.Text()
+	f, _ := strconv.ParseFloat(sc.Text(), 64)
+	return f
+
 }
 
-func Abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
-func Min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-func Gcd(x, y int) int {
-	if y == 0 {
-		return x
-	}
-	return Gcd(y, x%y)
-}
-
-func Lcm(x, y int) int {
-	return x * y / Gcd(x, y)
-}
-
-func Permutation(N, K int) int {
-	v := 1
-	if 0 < K && K <= N {
-		for i := 0; i < K; i++ {
-			v *= (N - i)
-		}
-	} else if K > N {
-		v = 0
-	}
-	return v
-}
-
-func Factional(N int) int {
-	return Permutation(N, N-1)
-}
-
-func Combination(N, K int) int {
-	if K == 1 {
-		return N
-	}
-	return Combination(N, K-1) * (N + 1 - K) / K
-}
-
-func DivideSlice(A []int, K int) ([]int, []int, error) {
-
-	if len(A) < K {
-		return nil, nil, errors.New("")
-	}
-	return A[:K+1], A[K:], nil
-}
-
-type Pos struct {
-	X int
-	Y int
-}
-
-type UnionFind struct {
-	par  []int // parent numbers
-	rank []int // height of tree
-}
-
-func NewUnionFind(n int) *UnionFind {
-	if n <= 0 {
-		return nil
-	}
-	u := new(UnionFind)
-	// for accessing index without minus 1
-	u.par = make([]int, n+1)
-	u.rank = make([]int, n+1)
-	for i := 0; i <= n; i++ {
-		u.par[i] = i
-		u.rank[i] = 0
-	}
-	return u
-}
-
-func (this *UnionFind) Find(x int) int {
-	if this.par[x] == x {
-		return x
-	} else {
-		// compress path
-		// ex. Find(4)
-		// 1 - 2 - 3 - 4
-		// 1 - 2
-		//  L-3
-		//  L 4
-		this.par[x] = this.Find(this.par[x])
-		return this.par[x]
-	}
-}
-
-func (this *UnionFind) ExistSameUnion(x, y int) bool {
-	return this.Find(x) == this.Find(y)
-}
-
-func (this *UnionFind) Unite(x, y int) {
-	x = this.Find(x)
-	y = this.Find(y)
-	if x == y {
-		return
-	}
-	// raink
-	if this.rank[x] < this.rank[y] {
-		this.par[x] = y
-	} else {
-		// this.rank[x] >= this.rank[y]
-		this.par[y] = x
-		if this.rank[x] == this.rank[y] {
-			this.rank[x]++
-		}
-	}
-}
-
-func PrintUnionFind(u *UnionFind) {
-	// for debuging. not optimize.
-	fmt.Println(u.par)
-	fmt.Println(u.rank)
+func Ceil(x, y int) int {
+	return (x + y - 1) / y
 }

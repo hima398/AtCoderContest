@@ -25,6 +25,12 @@ func nextInt() int {
 	return i
 }
 
+func nextFloat64() float64 {
+	sc.Scan()
+	f, _ := strconv.ParseFloat(sc.Text(), 64)
+	return f
+}
+
 func nextString() string {
 	sc.Scan()
 	return sc.Text()
