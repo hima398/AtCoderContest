@@ -20,13 +20,13 @@ func main() {
 	for i := 1; i <= n; i++ {
 		f[i] = nextInt()
 	}
-	visited := make([]bool, n+1)
+	groups := make([]int, n+1)
 	var dfs func(s, t int) int
 	dfs = func(s, t int) int {
-		visited[t] = true
-		if !visited[f[t]] {
+		groups[t] = s
+		if groups[f[t]] == 0 {
 			return dfs(s, f[t])
-		} else if f[t] == s {
+		} else if groups[f[t]] == groups[s] {
 			return 1
 		} else {
 			return 0
@@ -34,12 +34,12 @@ func main() {
 	}
 	c := 0
 	for i := 1; i <= n; i++ {
-		if visited[i] {
+		if groups[i] > 0 {
 			continue
 		}
 		c += dfs(i, i)
 	}
-	//fmt.Println(len(m))
+	//fmt.Println(c)
 	ans := 1
 	for i := 1; i <= c; i++ {
 		ans *= 2
