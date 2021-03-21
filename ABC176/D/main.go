@@ -21,11 +21,7 @@ func NewQueue() *Queue {
 	return new(Queue)
 }
 
-func (this *Queue) PushFront(p Pos) {
-	this.ps = append([]Pos{p}, this.ps...)
-}
-
-func (this *Queue) PushRear(p Pos) {
+func (this *Queue) Push(p Pos) {
 	this.ps = append(this.ps, p)
 }
 
@@ -85,40 +81,46 @@ func main() {
 		v1[i] = make([]bool, w)
 		fixed[i] = make([]bool, w)
 	}
-	q := NewQueue()
-	q.PushFront(Pos{ch, cw, 0})
+	q0 := NewQueue()
+	q1 := NewQueue()
+	q0.Push(Pos{ch, cw, 0})
 	v0[ch][cw] = true
-	for q.Size() > 0 {
-		pos := q.Pop()
+	for q0.Size() > 0 || q1.Size() > 0 {
+		var pos *Pos
+		if q0.Size() > 0 {
+			pos = q0.Pop()
+		} else {
+			pos = q1.Pop()
+		}
 
 		if !fixed[pos.I][pos.J] {
 			d[pos.I][pos.J] = pos.D
 			fixed[pos.I][pos.J] = true
+			if pos.I == dh && pos.J == dw {
+				fmt.Println(d[dh][dw])
+				return
+			}
 		}
 
 		for dir := 0; dir < 4; dir++ {
 			ni := pos.I + dirh[dir]
 			nj := pos.J + dirw[dir]
 			if ni >= 0 && ni < h && nj >= 0 && nj < w && s[ni][nj] == '.' && !v0[ni][nj] {
-				q.PushFront(Pos{ni, nj, pos.D})
+				q0.Push(Pos{ni, nj, pos.D})
 				v0[ni][nj] = true
 			}
 		}
 		for dir := 0; dir < len(warph); dir++ {
 			ni := pos.I + warph[dir]
 			nj := pos.J + warpw[dir]
-			if ni >= 0 && ni < h && nj >= 0 && nj < w && s[ni][nj] == '.' && !v1[ni][nj] {
-				q.PushRear(Pos{ni, nj, pos.D + 1})
+			if ni >= 0 && ni < h && nj >= 0 && nj < w && s[ni][nj] == '.' && !v0[ni][nj] && !v1[ni][nj] {
+				q1.Push(Pos{ni, nj, pos.D + 1})
 				v1[ni][nj] = true
 			}
 		}
+	}
+	fmt.Println(-1)
 
-	}
-	if fixed[dh][dw] {
-		fmt.Println(d[dh][dw])
-	} else {
-		fmt.Println(-1)
-	}
 }
 
 func nextInt() int {
