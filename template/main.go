@@ -25,6 +25,14 @@ func nextInt() int {
 	return i
 }
 
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
+}
+
 func nextFloat64() float64 {
 	sc.Scan()
 	f, _ := strconv.ParseFloat(sc.Text(), 64)
