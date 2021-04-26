@@ -5,14 +5,46 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
 var sc = bufio.NewScanner(os.Stdin)
 
-type Edge struct {
-	s, t int
-	c    string
+func SolveUnionFind() {
+	n, m := nextInt(), nextInt()
+	e := make(map[int][]int)
+	for i := 0; i < m; i++ {
+		a, b := nextInt(), nextInt()
+		a--
+		b--
+		e[a] = append(e[a], b)
+		e[b] = append(e[b], a)
+	}
+	po := make([][]int, 3)
+	for i := 0; i < n; i++ {
+		if len(e[i]) >= 3 {
+			fmt.Println(0)
+			return
+		}
+		po[len(e[i])] = append(po[len(e[i])], i)
+	}
+	for i := 2; i >= 0; i-- {
+		sort.Ints(po[i])
+		fmt.Println(po[i])
+	}
+	ans := make([]int, n)
+	for _, v := range po[0] {
+		ans[v] = 3
+	}
+	ii := 0
+	jj := 0
+	for i := 2; i >= 1; i-- {
+		for j, v := range 
+
+	}
+	fmt.Println(ans)
+
 }
 
 func main() {
@@ -20,22 +52,20 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	n, m := nextInt(), nextInt()
-	a, b, c := make([]int, n), make([]int, n), make([]string, n)
-	e := make(map[int][]Edge)
-	for i := 0; i < m; i++ {
-		a[i], b[i], c[i] = nextInt(), nextInt(), nextString()
-		e[a[i]] = append(e[a[i]], Edge{a[i], b[i], c[i]})
-		if a[i] != b[i] {
-			e[b[i]] = append(e[b[i]], Edge{b[i], a[i], c[i]})
-		}
-	}
 }
 
 func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
+}
+
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
 }
 
 func nextFloat64() float64 {

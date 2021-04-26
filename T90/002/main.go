@@ -10,32 +10,30 @@ import (
 
 var sc = bufio.NewScanner(os.Stdin)
 
-type Edge struct {
-	s, t int
-	c    string
-}
-
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	n, m := nextInt(), nextInt()
-	a, b, c := make([]int, n), make([]int, n), make([]string, n)
-	e := make(map[int][]Edge)
-	for i := 0; i < m; i++ {
-		a[i], b[i], c[i] = nextInt(), nextInt(), nextString()
-		e[a[i]] = append(e[a[i]], Edge{a[i], b[i], c[i]})
-		if a[i] != b[i] {
-			e[b[i]] = append(e[b[i]], Edge{b[i], a[i], c[i]})
-		}
+	n := nextInt()
+	if n%2 == 1 {
+		return
 	}
+
 }
 
 func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
+}
+
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
 }
 
 func nextFloat64() float64 {

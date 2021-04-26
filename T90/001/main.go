@@ -8,27 +8,26 @@ import (
 	"strconv"
 )
 
-var sc = bufio.NewScanner(os.Stdin)
+const Mod = 1000000007
 
-type Edge struct {
-	s, t int
-	c    string
-}
+var sc = bufio.NewScanner(os.Stdin)
 
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	n, m := nextInt(), nextInt()
-	a, b, c := make([]int, n), make([]int, n), make([]string, n)
-	e := make(map[int][]Edge)
-	for i := 0; i < m; i++ {
-		a[i], b[i], c[i] = nextInt(), nextInt(), nextString()
-		e[a[i]] = append(e[a[i]], Edge{a[i], b[i], c[i]})
-		if a[i] != b[i] {
-			e[b[i]] = append(e[b[i]], Edge{b[i], a[i], c[i]})
-		}
+	n, l := nextInt(), nextInt()
+	k := nextInt()
+	a := nextIntSlice()
+	dp := make([][]int, n+1)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, 2)
+	}
+	dp[0][0] = l
+	dp[0][1] = l
+	for i := 0; i < n; i++ {
+		dp[i+1][0] = dp[i][0]
 	}
 }
 
@@ -36,6 +35,14 @@ func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
+}
+
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
 }
 
 func nextFloat64() float64 {

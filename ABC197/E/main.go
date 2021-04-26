@@ -2,38 +2,92 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
 )
 
-const Mod = 1000000007
+const INF = 1 << 60
 
 var sc = bufio.NewScanner(os.Stdin)
+
+type Ball struct {
+	l, r, c int
+}
+
+func Dist(f, t, m int) int {
+	if (f < m && m < t) || (f > m && m > t) {
+		return Abs(t - f)
+	} else {
+		return Abs(m-f) + Abs(t-m)
+	}
+}
 
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
+	n := nextInt()
+	cmax := 0
+	x, c := make([]int, n), make([]int, n)
+	for i := 0; i < n; i++ {
+		x[i], c[i] = nextInt(), nextInt()
+		cmax = Max(cmax, c[i])
+	}
+	b := make([]Ball, cmax+1)
+	for i := 0; i <= cmax; i++ {
+		b[i].l = INF
+		b[i].r = -INF
+	}
+	for i := 0; i < n; i++ {
+		b[c[i]].c = c[i]
+		b[c[i]].r = Max(b[c[i]].r, x[i])
+		b[c[i]].l = Min(b[c[i]].l, x[i])
+	}
+	b[0].l = 0
+	b[0].r = 0
+	//fmt.Println(b)
+	dp := make([][]int, cmax+1)
+	for i := 0; i <= cmax; i++ {
+		dp[i] = make([]int, 2)
+	}
+	//fmt.Println(b)
+	for i := 0; i < cmax; i++ {
+		//if b[i+1].r == -INF && b[i+1].l == INF {
+		// 存在しない色の処理
+		if b[i+1].c == 0 {
+			dp[i+1][0] = dp[i][0]
+			dp[i+1][1] = dp[i][1]
+			// ボールは存在しないけども最左と最右の値を参照するのでコピーしておく
+			b[i+1].l = b[i].l
+			b[i+1].r = b[i].r
+			continue
+		}
+		// c[i]のボールのうち最左からc[i+1]のボールの最左に向かう距離
+		dl1 := Dist(b[i].l, b[i+1].l, b[i+1].r)
+		// c[i]のボールのうち最右からc[i+1]のボールの最左に向かう距離
+		dl2 := Dist(b[i].r, b[i+1].l, b[i+1].r)
+
+		dp[i+1][0] = Min(dp[i][0]+dl1, dp[i][1]+dl2)
+
+		// rignt
+		// c[i]のボールのうち最左からc[i+1]のボールの最右に向かう距離
+		dr1 := Dist(b[i].l, b[i+1].r, b[i+1].l)
+		// c[i]のボールのうち最右からc[i+1]のボールの最右に向かう距離
+		dr2 := Dist(b[i].r, b[i+1].r, b[i+1].l)
+
+		dp[i+1][1] = Min(dp[i][0]+dr1, dp[i][1]+dr2)
+	}
+	//fmt.Println(dp[cmax][0], dp[cmax][1])
+	ans := Min(dp[cmax][0]+Abs(b[cmax].l), dp[cmax][1]+Abs(b[cmax].r))
+	fmt.Println(ans)
 }
 
 func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
-}
-
-func nextFloat64() float64 {
-	sc.Scan()
-	f, _ := strconv.ParseFloat(sc.Text(), 64)
-	return f
-}
-
-func nextString() string {
-	sc.Scan()
-	return sc.Text()
 }
 
 func Abs(x int) int {
@@ -55,211 +109,4 @@ func Max(x, y int) int {
 		return y
 	}
 	return x
-}
-
-func Floor(x, y int) int {
-	return x / y
-}
-
-func Ceil(x, y int) int {
-	return (x + y - 1) / y
-}
-
-func Gcd(x, y int) int {
-	if x == 0 {
-		return y
-	}
-	if y == 0 {
-		return x
-	}
-	if x < y {
-		x, y = y, x
-	}
-	return Gcd(y, x%y)
-}
-
-func Lcm(x, y int) int {
-	return x * y / Gcd(x, y)
-}
-
-func Pow(x, y, p int) int {
-	ret := 1
-	for y > 0 {
-		if y%2 == 1 {
-			ret = ret * x % p
-		}
-		y >>= 1
-		x = x * x % p
-	}
-	return ret
-}
-
-func Inv(x, p int) int {
-	return Pow(x, p-2, p)
-}
-
-func Permutation(N, K int) int {
-	v := 1
-	if 0 < K && K <= N {
-		for i := 0; i < K; i++ {
-			v *= (N - i)
-		}
-	} else if K > N {
-		v = 0
-	}
-	return v
-}
-
-func Factional(N int) int {
-	return Permutation(N, N-1)
-}
-
-func Combination(N, K int) int {
-	if K == 0 {
-		return 1
-	}
-	if K == 1 {
-		return N
-	}
-	return Combination(N, K-1) * (N + 1 - K) / K
-}
-
-func DivideSlice(A []int, K int) ([]int, []int, error) {
-
-	if len(A) < K {
-		return nil, nil, errors.New("")
-	}
-	return A[:K+1], A[K:], nil
-}
-
-type IntQueue struct {
-	q []int
-}
-
-func NewIntQueue() *IntQueue {
-
-	return new(IntQueue)
-}
-func (this *IntQueue) Push(v int) {
-	this.q = append(this.q, v)
-}
-
-func (this *IntQueue) Pop() (int, error) {
-	if this.Size() == 0 {
-		return -1, errors.New("")
-	}
-	ret := this.q[0]
-	this.q = this.q[1:]
-	return ret, nil
-}
-
-func (this *IntQueue) Size() int {
-	return len(this.q)
-}
-
-func (this *IntQueue) PrintQueue() {
-	fmt.Println(this.q)
-}
-
-type Pos struct {
-	X int
-	Y int
-	D int
-}
-
-type Queue struct {
-	ps []Pos
-}
-
-func NewQueue() *Queue {
-	return new(Queue)
-}
-
-func (this *Queue) Push(p Pos) {
-	this.ps = append(this.ps, p)
-}
-
-func (this *Queue) Pop() *Pos {
-	if len(this.ps) == 0 {
-		return nil
-	}
-	p := this.ps[0]
-	this.ps = this.ps[1:]
-	return &p
-}
-
-func (this *Queue) Find(x, y int) bool {
-	for _, v := range this.ps {
-		if x == v.X && y == v.Y {
-			return true
-		}
-	}
-	return false
-}
-
-func (this *Queue) Size() int {
-	return len(this.ps)
-}
-
-type UnionFind struct {
-	par  []int // parent numbers
-	rank []int // height of tree
-}
-
-func NewUnionFind(n int) *UnionFind {
-	if n <= 0 {
-		return nil
-	}
-	u := new(UnionFind)
-	// for accessing index without minus 1
-	u.par = make([]int, n+1)
-	u.rank = make([]int, n+1)
-	for i := 0; i <= n; i++ {
-		u.par[i] = i
-		u.rank[i] = 0
-	}
-	return u
-}
-
-func (this *UnionFind) Find(x int) int {
-	if this.par[x] == x {
-		return x
-	} else {
-		// compress path
-		// ex. Find(4)
-		// 1 - 2 - 3 - 4
-		// 1 - 2
-		//  L-3
-		//  L 4
-		this.par[x] = this.Find(this.par[x])
-		return this.par[x]
-	}
-}
-
-func (this *UnionFind) ExistSameUnion(x, y int) bool {
-	return this.Find(x) == this.Find(y)
-}
-
-func (this *UnionFind) Unite(x, y int) {
-	x = this.Find(x)
-	y = this.Find(y)
-	if x == y {
-		return
-	}
-	// raink
-	if this.rank[x] < this.rank[y] {
-		this.par[x] = y
-	} else {
-		// this.rank[x] >= this.rank[y]
-		this.par[y] = x
-		if this.rank[x] == this.rank[y] {
-			this.rank[x]++
-		}
-	}
-}
-
-func PrintUnionFind(u *UnionFind) {
-	// for debuging. not optimize.
-	fmt.Println(u.par)
-	fmt.Println(u.rank)
 }
