@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 )
+
+const Mod = 1000000007
 
 var sc = bufio.NewScanner(os.Stdin)
 
@@ -16,24 +17,6 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	t := nextInt()
-	l, x, y := nextInt(), nextInt(), nextInt()
-	q := nextInt()
-	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
-	solve := func(e int) float64 {
-		fe := float64(e)
-		ft := float64(t)
-		fl := float64(l)
-		r := 2.0 * math.Pi * fe / ft
-		fy := -fl * math.Sin(r) / 2.0
-		fz := -fl*math.Cos(r)/2.0 + fl/2.0
-		return 180.0 * math.Atan2(fz, math.Sqrt(float64(x)*float64(x)+(fy-float64(y))*(fy-float64(y)))) / math.Pi
-	}
-	for i := 0; i < q; i++ {
-		e := nextInt()
-		fmt.Fprintln(out, solve(e))
-	}
 }
 
 func nextInt() int {
