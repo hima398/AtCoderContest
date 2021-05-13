@@ -8,82 +8,46 @@ import (
 	"strconv"
 )
 
+const Mod = 1000000007
+
 var sc = bufio.NewScanner(os.Stdin)
-
-func SolveSlice(n, q int) {
-	const INF = 1<<32 - 1
-	k := 1
-	for k < n {
-		k = k << 1
-	}
-
-	size := 2*k - 1
-	st := make([]int, size)
-	for i := 0; i < len(st); i++ {
-		st[i] = INF
-	}
-	var Update func(i, x int)
-	Update = func(i, x int) {
-		i += k - 1
-		if st[i] == INF {
-			st[i] = x
-		} else {
-			st[i] ^= x
-		}
-		for i > 0 {
-			i = (i - 1) / 2
-			if st[i*2+1] != INF && st[i*2+2] != INF {
-				st[i] = st[i*2+1] ^ st[i+2+2]
-			}
-		}
-	}
-	var RangeXor func(a, b, i, l, r int) int
-	RangeXor = func(a, b, i, l, r int) int {
-		//[a, b)と[l, r)が交差
-		if r <= a || b <= l {
-			return INF
-		}
-		if a <= l && b >= r {
-			return st[i]
-		} else {
-			vl := RangeXor(a, b, 2*i+1, l, (l+r)/2)
-			vr := RangeXor(a, b, 2*k+2, (l+r)/2, r)
-			if vl != INF && vr != INF {
-				return vl ^ vr
-			} else {
-				return INF
-			}
-		}
-	}
-
-	for i := 0; i < n; i++ {
-		a := nextInt()
-		Update(i, a)
-	}
-	for i := 0; i < q; i++ {
-		t, x, y := nextInt(), nextInt(), nextInt()
-		if t == 1 {
-
-		} else {
-			// t == 2
-		}
-	}
-}
 
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	n, q := nextInt(), nextInt()
-	fmt.Println(SolveSlice(n, q))
-
+	n, k := nextInt(), nextInt()
+	for i := 0; i < k; i++ {
+		if n%200 == 0 {
+			n = n / 200
+		} else {
+			sn := strconv.Itoa(n)
+			sn += "200"
+			n, _ = strconv.Atoi(sn)
+		}
+	}
+	fmt.Println(n)
 }
 
 func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
+}
+
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
+}
+
+func nextFloat64() float64 {
+	sc.Scan()
+	f, _ := strconv.ParseFloat(sc.Text(), 64)
+	return f
 }
 
 func nextString() string {
@@ -110,6 +74,14 @@ func Max(x, y int) int {
 		return y
 	}
 	return x
+}
+
+func Floor(x, y int) int {
+	return x / y
+}
+
+func Ceil(x, y int) int {
+	return (x + y - 1) / y
 }
 
 func Gcd(x, y int) int {
@@ -141,6 +113,10 @@ func Pow(x, y, p int) int {
 	return ret
 }
 
+func Inv(x, p int) int {
+	return Pow(x, p-2, p)
+}
+
 func Permutation(N, K int) int {
 	v := 1
 	if 0 < K && K <= N {
@@ -158,6 +134,9 @@ func Factional(N int) int {
 }
 
 func Combination(N, K int) int {
+	if K == 0 {
+		return 1
+	}
 	if K == 1 {
 		return N
 	}
