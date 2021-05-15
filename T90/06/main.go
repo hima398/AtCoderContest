@@ -36,11 +36,6 @@ func main() {
 			}
 		}
 	}
-	/*
-		for i := range m {
-			fmt.Println(m[i])
-		}
-	*/
 
 	ans := ""
 	rem := k

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -17,48 +18,6 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
-	const INF = int(1e9) + 1
-	w, n := nextInt(), nextInt()
-	//N種類の料理の中から何種類か選んで1つずつ作り、香辛料をW消費したときの料理の価値
-	dp := make([][]int, n+1)
-	for i := 0; i <= n; i++ {
-		dp[i] = make([]int, w+1)
-		for j := 0; j <= w; j++ {
-			dp[i][j] = -INF
-		}
-	}
-	dp[0][0] = 0
-	l, r, v := make([]int, n), make([]int, n), make([]int, n)
-	for i := 0; i < n; i++ {
-		l[i], r[i], v[i] = nextInt(), nextInt(), nextInt()
-	}
-	for i := 0; i < n; i++ {
-		for j := 0; j <= w; j++ {
-			// i番目の料理を作らない
-			dp[i+1][j] = dp[i][j]
-
-			// i番目の料理を作る
-			if j-l[i] >= 0 {
-				max := -INF
-				for k := l[i]; k <= r[i]; k++ {
-					if j-k < 0 {
-						break
-					}
-					max = Max(max, dp[i][j-k])
-				}
-				if max != -INF {
-					dp[i+1][j] = Max(dp[i+1][j], max+v[i])
-				}
-			}
-		}
-	}
-	var ans int
-	if dp[n][w] == -INF {
-		ans = -1
-	} else {
-		ans = dp[n][w]
-	}
-	fmt.Println(ans)
 }
 
 func nextInt() int {
@@ -172,6 +131,30 @@ func Combination(N, K int) int {
 		return N
 	}
 	return Combination(N, K-1) * (N + 1 - K) / K
+}
+
+func NextPermutation(x sort.Interface) bool {
+	n := x.Len() - 1
+	if n < 1 {
+		return false
+	}
+	j := n - 1
+	for ; !x.Less(j, j+1); j-- {
+		if j == 0 {
+			return false
+		}
+	}
+	l := n
+	for !x.Less(j, l) {
+		l--
+	}
+	x.Swap(j, l)
+	for k, l := j+1, n; k < l; {
+		x.Swap(k, l)
+		k++
+		l--
+	}
+	return true
 }
 
 func DivideSlice(A []int, K int) ([]int, []int, error) {
