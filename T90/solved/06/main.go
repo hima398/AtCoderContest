@@ -38,18 +38,16 @@ func main() {
 	}
 
 	ans := ""
-	rem := k
-	for i := 0; i < n; i++ {
+	idx := 0
+	for i := 0; i < k; i++ {
 		for j := 0; j < na; j++ {
-			if n-m[i][j] > rem {
-				ans += string(byte(j) + 'a')
-				i = m[i][j]
-				rem--
+			ns := m[idx][j]
+			rl := len(s) - ns + i
+			if rl >= k {
+				ans += string('a' + byte(j))
+				idx = ns + 1
 				break
 			}
-		}
-		if rem == 0 {
-			break
 		}
 	}
 	fmt.Println(ans)
