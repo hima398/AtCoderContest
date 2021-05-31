@@ -23,7 +23,7 @@ func main() {
 	a2 := a[hn:]
 	p1 := (1 << len(a1)) - 1
 	p2 := (1 << len(a2)) - 1
-	fmt.Printf("%b %b\n", p1, p2)
+	//fmt.Printf("%b %b\n", p1, p2)
 	s1 := make([][]int, len(a1)+1)
 	s2 := make([][]int, len(a2)+1)
 	for f := 0; f <= p1; f++ {
@@ -54,18 +54,21 @@ func main() {
 	for _, s := range s2 {
 		sort.Ints(s)
 	}
-	fmt.Println(s1)
-	fmt.Println(s2)
+	//fmt.Println(s1)
+	//fmt.Println(s2)
 	ans := 0
-	for i := 0; i <= k; i++ {
-		idx := sort.Search(len(s1[i]), func(j int) bool {
-			return s1[i][j] > p
-		})
-		//fmt.Println(i, idx)
-		idx2 := sort.Search(len(s2[i]), func(j int) bool {
-			return s1[i][idx-1]+s2[k-i][j] > p
-		})
-		fmt.Println(i, idx, idx2)
+	for i := 0; i <= Min(k, len(s1)-1); i++ {
+		if k-i < len(s2) {
+			for _, v := range s1[i] {
+				// s1からi個選んだ合計と、s2からk-i個選んだ合計との和がpを超えるs2[k-i]のインデックスを探す
+				// インデックスの値が、上記のp以下になる組み合わせの個数
+				idx := sort.Search(len(s2[k-i]), func(ii int) bool {
+					return v+s2[k-i][ii] > p
+				})
+				//fmt.Println(i, v, idx)
+				ans += idx
+			}
+		}
 	}
 	fmt.Println(ans)
 }
@@ -82,6 +85,13 @@ func nextIntSlice(n int) []int {
 		s[i] = nextInt()
 	}
 	return s
+}
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 func Ceil(x, y int) int {
