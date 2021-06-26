@@ -9,6 +9,51 @@ import (
 
 var sc = bufio.NewScanner(os.Stdin)
 
+type Pos struct {
+	r, c int
+	dir  int
+}
+
+type DoubleEndedQueue struct {
+	front []Pos
+	rear  []Pos
+}
+
+func NewDoubleEndedQueue() *DoubleEndedQueue {
+	return &DoubleEndedQueue{}
+}
+
+func (deq *DoubleEndedQueue) PushFront(p Pos) {
+	deq.front = append(deq.front, p)
+}
+
+func (deq *DoubleEndedQueue) PushBack(p Pos) {
+	deq.rear = append(deq.rear, p)
+}
+
+func (deq *DoubleEndedQueue) Pop() (ret Pos) {
+	if len(deq.front) > 0 {
+		nf := len(deq.front)
+		ret = deq.front[nf-1]
+		deq.front = deq.front[:nf-1]
+	} else if len(deq.rear) > 0 {
+		ret = deq.rear[0]
+		deq.rear = deq.rear[1:]
+	} else {
+		//キューが空の時にPopされるエラー処理を書くのだけど省略
+	}
+	return ret
+}
+
+func (deq *DoubleEndedQueue) Len() int {
+	return len(deq.front) + len(deq.rear)
+}
+
+func (deq *DoubleEndedQueue) Print() {
+	fmt.Println(deq.front)
+	fmt.Println(deq.rear)
+}
+
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
@@ -26,66 +71,59 @@ func main() {
 	for i := 0; i < h; i++ {
 		s[i] = nextString()
 	}
-	v := make([][]bool, h)
-	ans := make([][]int, h)
+	c := make([][][4]int, h)
 	for i := 0; i < h; i++ {
-		v[i] = make([]bool, w)
-		ans[i] = make([]int, w)
+		c[i] = make([][4]int, w)
 		for j := 0; j < w; j++ {
-			ans[i][j] = INF
+			for k := 0; k < 4; k++ {
+				c[i][j][k] = INF
+			}
 		}
 	}
 	dr := []int{0, -1, 0, 1}
 	dc := []int{-1, 0, 1, 0}
-	var dfs func(pr, pc, r, c, t int)
-	dfs = func(pr, pc, r, c, t int) {
-		v[r][c] = true
-		ans[r][c] = Min(ans[r][c], t)
-		for i := 0; i < 4; i++ {
-			nr, nc := r+dr[i], c+dc[i]
-			if nr >= 0 && nr < h && nc >= 0 && nc < w && s[nr][nc] == '.' {
-				//上下方向の移動
-				if i%2 == 0 {
-					if pc-c == 0 {
-						if t+1 < ans[nr][nc] {
-							dfs(r, c, nr, nc, t+1)
-						}
+	//var q []Pos
+	q := NewDoubleEndedQueue()
+	for k := 0; k < 4; k++ {
+		c[rs][cs][k] = 0
+	}
+	for k := 0; k < 4; k++ {
+		q.PushBack(Pos{rs, cs, k})
+	}
+	for q.Len() > 0 {
+		//q.Print()
+		p := q.Pop()
+		/*
+			if p.cost >= 0 {
+				c[p.r][p.c][p.dir] = p.cost
+			}
+		*/
+		for k := 0; k < 4; k++ {
+			cost := c[p.r][p.c][p.dir]
+			if p.dir != k {
+				cost++
+			}
+			nr, nc := p.r+dr[k], p.c+dc[k]
+
+			if nr >= 0 && nr < h && nc >= 0 && nc < w {
+				if s[nr][nc] == '.' && c[nr][nc][k] > cost {
+					c[nr][nc][k] = cost
+					if p.dir != k {
+						q.PushBack(Pos{nr, nc, k})
 					} else {
-						if t < ans[nr][nc] {
-							dfs(r, c, nr, nc, t)
-						}
-					}
-				} else {
-					//左右方向の移動
-					if pr-r == 0 {
-						if t+1 < ans[nr][nc] {
-							dfs(r, c, nr, nc, t+1)
-						}
-					} else {
-						if t < ans[nr][nc] {
-							dfs(r, c, nr, nc, t)
-						}
+						q.PushFront(Pos{nr, nc, k})
 					}
 				}
 			}
 		}
 	}
-	v[rs][cs] = true
-	ans[rs][cs] = 0
-	for i := 0; i < 4; i++ {
-		nr, nc := rs+dr[i], cs+dc[i]
-		if nr >= 0 && nr < h && nc >= 0 && nc < w && s[nr][nc] == '.' {
-			dfs(rs, cs, nr, nc, 0)
-		}
+
+	//fmt.Println(c)
+	ans := INF
+	for k := 0; k < 4; k++ {
+		ans = Min(ans, c[rt][ct][k])
 	}
-
-	/*
-		for i := 0; i < h; i++ {
-			fmt.Printf("%7d\n", ans[i])
-		}
-	*/
-
-	fmt.Println(ans[rt][ct])
+	fmt.Println(ans)
 }
 
 func nextInt() int {
