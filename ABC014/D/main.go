@@ -10,6 +10,11 @@ import (
 
 var sc = bufio.NewScanner(os.Stdin)
 
+const MaxNode = int(1e5)
+const MaxLogNode = 17 //16.61
+var parent [MaxLogNode + 1][MaxNode + 1]int
+var depth [MaxNode + 1]int
+
 var e map[int][]int
 
 type Node struct {
@@ -36,28 +41,100 @@ func bfs(f, t, n int) int {
 	return -1
 }
 
+func Dfs(i, par, d int) {
+	parent[0][i] = par
+	depth[i] = d
+
+	for _, next := range e[i] {
+		if next == par {
+			continue
+		}
+		Dfs(next, i, d+1)
+	}
+}
+
+func BinarySearchLCAInit(v int) {
+	Dfs(0, -1, 0)
+	for i := 0; i < MaxLogNode; i++ {
+		for j := 0; j < v; j++ {
+			if parent[i][j] < 0 {
+				parent[i+1][j] = -1
+			} else {
+				parent[i+1][j] = parent[i][parent[i][j]]
+			}
+		}
+	}
+}
+
+func BinarySearchLCA(u, v int) int {
+
+	// depth(u) <= depth(v)になるように調整する
+	if depth[u] > depth[v] {
+		u, v = v, u
+	}
+	for i := 0; i < MaxLogNode; i++ {
+		if ((depth[v]-depth[u])>>i)&1 == 1 {
+			v = parent[i][v]
+		}
+	}
+	if u == v {
+		return u
+	}
+	for i := MaxLogNode - 1; i >= 0; i-- {
+		if parent[i][u] != parent[i][v] {
+			u = parent[i][u]
+			v = parent[i][v]
+		}
+	}
+	return parent[0][u]
+
+}
+
+func Solve(n int, x, y []int, q int, a, b []int) []int {
+	e = make(map[int][]int)
+	for i := 0; i < n-1; i++ {
+		// 0-indexed
+		x[i]--
+		y[i]--
+		e[x[i]] = append(e[x[i]], y[i])
+		e[y[i]] = append(e[y[i]], x[i])
+	}
+	for i := 0; i < q; i++ {
+		a[i]--
+		b[i]--
+	}
+
+	BinarySearchLCAInit(n)
+	var ans []int
+	//for i := 0; i < n; i++ {
+	//	fmt.Printf("%d ", depth[i])
+	//}
+	//fmt.Println()
+	for i := 0; i < q; i++ {
+		node := BinarySearchLCA(a[i], b[i])
+		//fmt.Println(node)
+		dist := depth[a[i]] + depth[b[i]] - 2*depth[node]
+		ans = append(ans, dist+1)
+	}
+	return ans
+}
+
 func main() {
 	buf := make([]byte, 1024*1024)
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
 	n := nextInt()
-	e = make(map[int][]int)
+	x, y := make([]int, n-1), make([]int, n-1)
 	for i := 0; i < n-1; i++ {
-		x, y := nextInt(), nextInt()
-		x--
-		y--
-		e[x] = append(e[x], y)
-		e[y] = append(e[y], x)
+		x[i], y[i] = nextInt(), nextInt()
 	}
 	q := nextInt()
-	var ans []int
+	a, b := make([]int, q), make([]int, q)
 	for i := 0; i < q; i++ {
-		a, b := nextInt(), nextInt()
-		a--
-		b--
-		ans = append(ans, bfs(a, b, n)+1)
+		a[i], b[i] = nextInt(), nextInt()
 	}
+	ans := Solve(n, x, y, q, a, b)
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 	for _, v := range ans {
@@ -69,25 +146,6 @@ func nextInt() int {
 	sc.Scan()
 	i, _ := strconv.Atoi(sc.Text())
 	return i
-}
-
-func nextIntSlice(n int) []int {
-	s := make([]int, n)
-	for i := range s {
-		s[i] = nextInt()
-	}
-	return s
-}
-
-func nextFloat64() float64 {
-	sc.Scan()
-	f, _ := strconv.ParseFloat(sc.Text(), 64)
-	return f
-}
-
-func nextString() string {
-	sc.Scan()
-	return sc.Text()
 }
 
 func Abs(x int) int {

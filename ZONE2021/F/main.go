@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
-
-const Mod = 1000000007
 
 var sc = bufio.NewScanner(os.Stdin)
 
@@ -17,6 +16,66 @@ func main() {
 	sc.Buffer(buf, bufio.MaxScanTokenSize)
 	sc.Split(bufio.ScanWords)
 
+	n, m := nextInt(), nextInt()
+	a := nextIntSlice(m)
+	ok := make([]bool, n)
+	for i := 0; i < n; i++ {
+		ok[i] = true
+	}
+	for _, v := range a {
+		ok[v] = false
+	}
+	var basis []int
+	var used []int
+	for i := 1; i < n; i++ {
+		if !ok[i] {
+			continue
+		}
+		x := i
+		for _, b := range basis {
+			x = Min(x, b^x)
+		}
+		if x == 0 {
+			continue
+		}
+		used = append(used, i)
+		basis = append(basis, x)
+	}
+	//fmt.Println(used)
+	//fmt.Println(basis)
+	p := 0
+	for 1<<p != n {
+		p++
+	}
+	if len(used) != p {
+		fmt.Println(-1)
+		return
+	}
+
+	type Route struct {
+		s, t int
+	}
+	var ans []Route
+	visited := make([]bool, n)
+	var Dfs func(x int)
+	Dfs = func(x int) {
+		visited[x] = true
+		for _, v := range used {
+			to := x ^ v
+			if visited[to] {
+				continue
+			}
+			ans = append(ans, Route{x, to})
+			Dfs(to)
+		}
+	}
+	Dfs(0)
+
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+	for _, v := range ans {
+		fmt.Fprintf(out, "%d %d\n", v.s, v.t)
+	}
 }
 
 func nextInt() int {
@@ -80,14 +139,20 @@ func Gcd(x, y int) int {
 	if y == 0 {
 		return x
 	}
-	if x < y {
-		x, y = y, x
-	}
+	/*
+		if x < y {
+			x, y = y, x
+		}
+	*/
 	return Gcd(y, x%y)
 }
 
 func Lcm(x, y int) int {
-	return x * y / Gcd(x, y)
+	// x*yのオーバーフロー対策のため先にGcdで割る
+	// Gcd(x, y)はxの約数のため割り切れる
+	ret := x / Gcd(x, y)
+	ret *= y
+	return ret
 }
 
 func Pow(x, y, p int) int {
@@ -130,6 +195,84 @@ func Combination(N, K int) int {
 		return N
 	}
 	return Combination(N, K-1) * (N + 1 - K) / K
+}
+
+type Comb struct {
+	n, p int
+	fac  []int // Factional(i) mod p
+	finv []int // 1/Factional(i) mod p
+	inv  []int // 1/i mod p
+}
+
+func NewCombination(n, p int) *Comb {
+	c := new(Comb)
+	c.n = n
+	c.p = p
+	c.fac = make([]int, n+1)
+	c.finv = make([]int, n+1)
+	c.inv = make([]int, n+1)
+
+	c.fac[0] = 1
+	c.fac[1] = 1
+	c.finv[0] = 1
+	c.finv[1] = 1
+	c.inv[1] = 1
+	for i := 2; i <= n; i++ {
+		c.fac[i] = c.fac[i-1] * i % p
+		c.inv[i] = p - c.inv[p%i]*(p/i)%p
+		c.finv[i] = c.finv[i-1] * c.inv[i] % p
+	}
+	return c
+}
+
+func (c *Comb) Factional(x int) int {
+	return c.fac[x]
+}
+
+func (c *Comb) Combination(n, k int) int {
+	if n < k {
+		return 0
+	}
+	if n < 0 || k < 0 {
+		return 0
+	}
+	ret := c.fac[n] * c.finv[k]
+	ret %= c.p
+	ret *= c.finv[n-k]
+	ret %= c.p
+	return ret
+}
+
+//重複組み合わせ H
+func (c *Comb) DuplicateCombination(n, k int) int {
+	return c.Combination(n+k-1, k)
+}
+func (c *Comb) Inv(x int) int {
+	return c.inv[x]
+}
+
+func NextPermutation(x sort.Interface) bool {
+	n := x.Len() - 1
+	if n < 1 {
+		return false
+	}
+	j := n - 1
+	for ; !x.Less(j, j+1); j-- {
+		if j == 0 {
+			return false
+		}
+	}
+	l := n
+	for !x.Less(j, l) {
+		l--
+	}
+	x.Swap(j, l)
+	for k, l := j+1, n; k < l; {
+		x.Swap(k, l)
+		k++
+		l--
+	}
+	return true
 }
 
 func DivideSlice(A []int, K int) ([]int, []int, error) {
@@ -212,6 +355,7 @@ func (this *Queue) Size() int {
 type UnionFind struct {
 	par  []int // parent numbers
 	rank []int // height of tree
+	size []int
 }
 
 func NewUnionFind(n int) *UnionFind {
@@ -222,9 +366,11 @@ func NewUnionFind(n int) *UnionFind {
 	// for accessing index without minus 1
 	u.par = make([]int, n+1)
 	u.rank = make([]int, n+1)
+	u.size = make([]int, n+1)
 	for i := 0; i <= n; i++ {
 		u.par[i] = i
 		u.rank[i] = 0
+		u.size[i] = 1
 	}
 	return u
 }
@@ -244,6 +390,10 @@ func (this *UnionFind) Find(x int) int {
 	}
 }
 
+func (this *UnionFind) Size(x int) int {
+	return this.size[this.Find(x)]
+}
+
 func (this *UnionFind) ExistSameUnion(x, y int) bool {
 	return this.Find(x) == this.Find(y)
 }
@@ -254,12 +404,16 @@ func (this *UnionFind) Unite(x, y int) {
 	if x == y {
 		return
 	}
-	// raink
+	// rank
 	if this.rank[x] < this.rank[y] {
+		//yがrootの木にxがrootの木を結合する
 		this.par[x] = y
+		this.size[y] += this.size[x]
 	} else {
 		// this.rank[x] >= this.rank[y]
+		//xがrootの木にyがrootの木を結合する
 		this.par[y] = x
+		this.size[x] += this.size[y]
 		if this.rank[x] == this.rank[y] {
 			this.rank[x]++
 		}
@@ -270,4 +424,5 @@ func PrintUnionFind(u *UnionFind) {
 	// for debuging. not optimize.
 	fmt.Println(u.par)
 	fmt.Println(u.rank)
+	fmt.Println(u.size)
 }

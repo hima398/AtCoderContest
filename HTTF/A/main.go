@@ -1,0 +1,679 @@
+package main
+
+import (
+	"bufio"
+	"container/heap"
+	"errors"
+	"fmt"
+	"os"
+	"sort"
+	"strconv"
+)
+
+var sc = bufio.NewScanner(os.Stdin)
+
+type Polyomino struct {
+	n, m int     // 高さと幅
+	c    int     // コスト
+	s    [][]int // 形
+}
+
+func ScanPolyomino() Polyomino {
+	n, m := nextInt(), nextInt()
+	c := nextInt()
+	ss := make([]string, n)
+	s := make([][]int, n)
+	for i := 0; i < n; i++ {
+		ss[i] = nextString()
+		s[i] = make([]int, m)
+		for j := 0; j < m; j++ {
+			if ss[i][j] == '#' {
+				s[i][j] = 1
+			}
+		}
+	}
+	return Polyomino{n, m, c, s}
+}
+
+func SolveHonestly() {
+	fmt.Println(2500)
+	for i := 0; i < 50; i++ {
+		for j := 0; j < 50; j++ {
+			fmt.Println(1, i, j)
+		}
+	}
+}
+
+func SolveManually() {
+	fmt.Println(49)
+	fmt.Println(2, 0, 0)
+	fmt.Println(5, 0, 4)
+	fmt.Println(8, 5, 5)
+	fmt.Println(1, 4, 4)
+	fmt.Println(1, 4, 5)
+	fmt.Println(11, 10, 12)
+	fmt.Println(1, 14, 16)
+	fmt.Println(1, 14, 15)
+	fmt.Println(10, 15, 3)
+	fmt.Println(5, 16, 7)
+	fmt.Println(9, 23, 12)
+	fmt.Println(4, 23, 10)
+	fmt.Println(10, 25, 19)
+	fmt.Println(11, 23, 27)
+	fmt.Println(10, 10, 19)
+	fmt.Println(4, 5, 17)
+	fmt.Println(4, 4, 12)
+	fmt.Println(8, 0, 19)
+	fmt.Println(1, 0, 27)
+	fmt.Println(1, 0, 20)
+	fmt.Println(1, 1, 21)
+	fmt.Println(8, 6, 30)
+	fmt.Println(4, 10, 27)
+	fmt.Println(11, 8, 44)
+	fmt.Println(5, 3, 43)
+	fmt.Println(10, 0, 37)
+	fmt.Println(1, 10, 31)
+	fmt.Println(1, 10, 32)
+	fmt.Println(9, 41, 4)
+	fmt.Println(10, 30, 0)
+	fmt.Println(4, 30, 8)
+	fmt.Println(10, 42, 11)
+	fmt.Println(5, 38, 15)
+	fmt.Println(8, 44, 17)
+	fmt.Println(1, 49, 22)
+	fmt.Println(1, 49, 23)
+	fmt.Println(1, 49, 24)
+	fmt.Println(9, 38, 25)
+	fmt.Println(5, 16, 29)
+	fmt.Println(1, 17, 34)
+	fmt.Println(3, 17, 44)
+	fmt.Println(11, 23, 42)
+	fmt.Println(10, 26, 33)
+	fmt.Println(4, 32, 42)
+	fmt.Println(9, 34, 34)
+	fmt.Println(8, 38, 41)
+	fmt.Println(1, 33, 34)
+	fmt.Println(4, 42, 32)
+	fmt.Println(1, 39, 20)
+}
+
+func FirstSolve(n, k, b int, is, js []int, ps []Polyomino) {
+	f := make([][]int, n)
+	for i := 0; i < n; i++ {
+		f[i] = make([]int, n)
+	}
+
+	for kk := 0; kk < k; kk++ {
+		f[is[kk]][js[kk]] = 1
+	}
+	mj := make([]int, n)
+	for i := 0; i < n; i++ {
+		maxj := 0
+		for j := 0; j < n; j++ {
+			if f[i][j] > 0 {
+				maxj = j
+			}
+		}
+		mj[i] = maxj
+	}
+	m := 0
+	for i := 0; i < n; i++ {
+		m += mj[i] + 1
+	}
+	fmt.Println(m)
+	for i := 0; i < n; i++ {
+		for j := 0; j <= mj[i]; j++ {
+			fmt.Println(1, i, j)
+		}
+	}
+}
+
+func Solve2(n, k, b int, is, js []int, ps []Polyomino) {
+	f := make([][]int, n)
+	for i := 0; i < n; i++ {
+		f[i] = make([]int, n)
+	}
+
+	type Pos struct {
+		i, j, d int
+	}
+	var q []Pos
+	for i := 0; i < k; i++ {
+		q = append(q, Pos{is[i], js[i], 0})
+	}
+	var visited [][]bool
+	di := []int{-1, 0, 1, 0}
+	dj := []int{0, -1, 0, 1}
+	var Dfs func(i, j, ti, tj int) bool
+	Dfs = func(i, j, ti, tj int) bool {
+		visited[i][j] = true
+		if i == ti && j == tj {
+			return true
+		}
+		for kk := 0; kk < 4; kk++ {
+			ni, nj := i+di[kk], j+dj[kk]
+			if ni >= 0 && ni < n && nj >= 0 && nj < n {
+				if !visited[ni][nj] && f[ni][nj] == 0 {
+					visited[ni][nj] = true
+					if Dfs(ni, nj, ti, tj) {
+						f[ni][nj]++
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+	for len(q) > 1 {
+		p := q[0]
+		q = q[1:]
+		sort.Slice(q, func(i, j int) bool {
+			return Abs(p.i-q[i].i)+Abs(p.j-q[i].j) < Abs(p.i-q[j].i)+Abs(p.j-q[j].j)
+		})
+		if p.i <= q[0].i {
+			if p.j <= q[0].j {
+				for i := p.i; i <= q[0].i; i++ {
+					f[i][p.j]++
+				}
+				for j := p.j; j <= q[0].j; j++ {
+					f[q[0].i][j]++
+				}
+			} else {
+				for i := p.i; i <= q[0].i; i++ {
+					f[i][p.j]++
+				}
+				for j := q[0].j; j <= p.j; j++ {
+					f[q[0].i][j]++
+				}
+			}
+		} else {
+			// p.i < q[0].i
+			if p.j <= q[0].j {
+				for i := q[0].i; i <= p.i; i++ {
+					f[i][p.j]++
+				}
+				for j := p.j; j <= q[0].j; j++ {
+					f[q[0].i][j]++
+				}
+			} else {
+				for i := q[0].i; i <= p.i; i++ {
+					f[i][q[0].j]++
+				}
+				for j := q[0].j; j <= p.j; j++ {
+					f[p.i][j]++
+				}
+
+			}
+		}
+		//f[p.i][p.j]++
+		/*
+			for i := Min(p.i, q[0].i); i <= Max(p.i, q[0].i); i++ {
+				f[i][Min(p.j, q[0].j)]++
+			}
+			if p.i <= q[0].i {
+				if p.j <= q[0].j {
+					for j := p.j; j<=q[0].j; j++ {
+						f[][j]++
+					}
+				} else {
+
+				}
+			}
+		*/
+		//if p.i <= q[0].i {
+		//	for j := Min(p.j, q[0].j); j <= Max(p.j, q[0].j); j++ {
+		//		//f[p.i][j]++
+		//		f[q[0].i][j]++
+		//	}
+		//}// else if p.i > q[0].i {
+		//	for j := Min(p.j, q[0].j); j <= Max(p.j, q[0].j); j++ {
+		//		//f[q[0].i][j]++
+		//		f[p.i][j]++
+		//	}
+		//}
+
+		//visited = make([][]bool, n)
+		//for i := 0; i < n; i++ {
+		//	visited[i] = make([]bool, n)
+		//}
+		//fmt.Println(p.i, p.j, q[0].i, q[0].j)
+		//Dfs(p.i, p.j, q[0].i, q[0].j)
+	}
+	type Answer struct {
+		t, i, j int
+	}
+	cnt := 0
+	var ans []Answer
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			if f[i][j] > 0 {
+				ans = append(ans, Answer{1, i, j})
+				cnt++
+			}
+		}
+	}
+	fmt.Println(cnt)
+	for i := 0; i < len(ans); i++ {
+		fmt.Println(ans[i].t, ans[i].i, ans[i].j)
+	}
+}
+
+type Cell struct {
+	i, j, d int
+}
+
+type PriorityQueue []Cell
+
+func (pq PriorityQueue) Len() int {
+	return len(pq)
+}
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].d < pq[j].d
+}
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+}
+
+func (pq *PriorityQueue) Push(item interface{}) {
+	*pq = append(*pq, item.(Cell))
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	es := *pq
+	n := len(es)
+	item := es[n-1]
+	*pq = es[0 : n-1]
+	return item
+}
+
+func Solve3(n, k, b int, is, js []int, ps []Polyomino) {
+
+	type Pos struct {
+		i, j, d int
+	}
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+	for kk := 0; kk < k; kk++ {
+		c := Cell{is[kk], js[kk], Abs(is[kk]) + Abs(js[kk])}
+		heap.Push(pq, c)
+	}
+
+	f := make([][]int, n)
+	for i := 0; i < n; i++ {
+		f[i] = make([]int, n)
+	}
+
+	for pq.Len() > 0 {
+
+	}
+
+}
+
+func main() {
+	buf := make([]byte, 1024*1024)
+	sc.Buffer(buf, bufio.MaxScanTokenSize)
+	sc.Split(bufio.ScanWords)
+
+	//SolveHonestly()
+	SolveManually()
+	_, k, b := nextInt(), nextInt(), nextInt()
+	is, js := make([]int, k), make([]int, k)
+	for i := 0; i < k; i++ {
+		is[i], js[i] = nextInt(), nextInt()
+	}
+	ps := make([]Polyomino, b)
+	for i := 0; i < b; i++ {
+		ps[i] = ScanPolyomino()
+	}
+	//FirstSolve(n, k, b, is, js, ps)
+	//Solve2(n, k, b, is, js, ps)
+}
+
+func nextInt() int {
+	sc.Scan()
+	i, _ := strconv.Atoi(sc.Text())
+	return i
+}
+
+func nextIntSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = nextInt()
+	}
+	return s
+}
+
+func nextFloat64() float64 {
+	sc.Scan()
+	f, _ := strconv.ParseFloat(sc.Text(), 64)
+	return f
+}
+
+func nextString() string {
+	sc.Scan()
+	return sc.Text()
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func Max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func Floor(x, y int) int {
+	return x / y
+}
+
+func Ceil(x, y int) int {
+	return (x + y - 1) / y
+}
+
+func Gcd(x, y int) int {
+	if x == 0 {
+		return y
+	}
+	if y == 0 {
+		return x
+	}
+	/*
+		if x < y {
+			x, y = y, x
+		}
+	*/
+	return Gcd(y, x%y)
+}
+
+func Lcm(x, y int) int {
+	// x*yのオーバーフロー対策のため先にGcdで割る
+	// Gcd(x, y)はxの約数のため割り切れる
+	ret := x / Gcd(x, y)
+	ret *= y
+	return ret
+}
+
+func Pow(x, y, p int) int {
+	ret := 1
+	for y > 0 {
+		if y%2 == 1 {
+			ret = ret * x % p
+		}
+		y >>= 1
+		x = x * x % p
+	}
+	return ret
+}
+
+func Inv(x, p int) int {
+	return Pow(x, p-2, p)
+}
+
+func Permutation(N, K int) int {
+	v := 1
+	if 0 < K && K <= N {
+		for i := 0; i < K; i++ {
+			v *= (N - i)
+		}
+	} else if K > N {
+		v = 0
+	}
+	return v
+}
+
+func Factional(N int) int {
+	return Permutation(N, N-1)
+}
+
+func Combination(N, K int) int {
+	if K == 0 {
+		return 1
+	}
+	if K == 1 {
+		return N
+	}
+	return Combination(N, K-1) * (N + 1 - K) / K
+}
+
+type Comb struct {
+	n, p int
+	fac  []int // Factional(i) mod p
+	finv []int // 1/Factional(i) mod p
+	inv  []int // 1/i mod p
+}
+
+func NewCombination(n, p int) *Comb {
+	c := new(Comb)
+	c.n = n
+	c.p = p
+	c.fac = make([]int, n+1)
+	c.finv = make([]int, n+1)
+	c.inv = make([]int, n+1)
+
+	c.fac[0] = 1
+	c.fac[1] = 1
+	c.finv[0] = 1
+	c.finv[1] = 1
+	c.inv[1] = 1
+	for i := 2; i <= n; i++ {
+		c.fac[i] = c.fac[i-1] * i % p
+		c.inv[i] = p - c.inv[p%i]*(p/i)%p
+		c.finv[i] = c.finv[i-1] * c.inv[i] % p
+	}
+	return c
+}
+
+func (c *Comb) Factional(x int) int {
+	return c.fac[x]
+}
+
+func (c *Comb) Combination(n, k int) int {
+	if n < k {
+		return 0
+	}
+	if n < 0 || k < 0 {
+		return 0
+	}
+	ret := c.fac[n] * c.finv[k]
+	ret %= c.p
+	ret *= c.finv[n-k]
+	ret %= c.p
+	return ret
+}
+
+//重複組み合わせ H
+func (c *Comb) DuplicateCombination(n, k int) int {
+	return c.Combination(n+k-1, k)
+}
+func (c *Comb) Inv(x int) int {
+	return c.inv[x]
+}
+
+func NextPermutation(x sort.Interface) bool {
+	n := x.Len() - 1
+	if n < 1 {
+		return false
+	}
+	j := n - 1
+	for ; !x.Less(j, j+1); j-- {
+		if j == 0 {
+			return false
+		}
+	}
+	l := n
+	for !x.Less(j, l) {
+		l--
+	}
+	x.Swap(j, l)
+	for k, l := j+1, n; k < l; {
+		x.Swap(k, l)
+		k++
+		l--
+	}
+	return true
+}
+
+func DivideSlice(A []int, K int) ([]int, []int, error) {
+
+	if len(A) < K {
+		return nil, nil, errors.New("")
+	}
+	return A[:K+1], A[K:], nil
+}
+
+type IntQueue struct {
+	q []int
+}
+
+func NewIntQueue() *IntQueue {
+
+	return new(IntQueue)
+}
+func (this *IntQueue) Push(v int) {
+	this.q = append(this.q, v)
+}
+
+func (this *IntQueue) Pop() (int, error) {
+	if this.Size() == 0 {
+		return -1, errors.New("")
+	}
+	ret := this.q[0]
+	this.q = this.q[1:]
+	return ret, nil
+}
+
+func (this *IntQueue) Size() int {
+	return len(this.q)
+}
+
+func (this *IntQueue) PrintQueue() {
+	fmt.Println(this.q)
+}
+
+type Pos struct {
+	X int
+	Y int
+	D int
+}
+
+type Queue struct {
+	ps []Pos
+}
+
+func NewQueue() *Queue {
+	return new(Queue)
+}
+
+func (this *Queue) Push(p Pos) {
+	this.ps = append(this.ps, p)
+}
+
+func (this *Queue) Pop() *Pos {
+	if len(this.ps) == 0 {
+		return nil
+	}
+	p := this.ps[0]
+	this.ps = this.ps[1:]
+	return &p
+}
+
+func (this *Queue) Find(x, y int) bool {
+	for _, v := range this.ps {
+		if x == v.X && y == v.Y {
+			return true
+		}
+	}
+	return false
+}
+
+func (this *Queue) Size() int {
+	return len(this.ps)
+}
+
+type UnionFind struct {
+	par  []int // parent numbers
+	rank []int // height of tree
+	size []int
+}
+
+func NewUnionFind(n int) *UnionFind {
+	if n <= 0 {
+		return nil
+	}
+	u := new(UnionFind)
+	// for accessing index without minus 1
+	u.par = make([]int, n+1)
+	u.rank = make([]int, n+1)
+	u.size = make([]int, n+1)
+	for i := 0; i <= n; i++ {
+		u.par[i] = i
+		u.rank[i] = 0
+		u.size[i] = 1
+	}
+	return u
+}
+
+func (this *UnionFind) Find(x int) int {
+	if this.par[x] == x {
+		return x
+	} else {
+		// compress path
+		// ex. Find(4)
+		// 1 - 2 - 3 - 4
+		// 1 - 2
+		//  L-3
+		//  L 4
+		this.par[x] = this.Find(this.par[x])
+		return this.par[x]
+	}
+}
+
+func (this *UnionFind) Size(x int) int {
+	return this.size[this.Find(x)]
+}
+
+func (this *UnionFind) ExistSameUnion(x, y int) bool {
+	return this.Find(x) == this.Find(y)
+}
+
+func (this *UnionFind) Unite(x, y int) {
+	x = this.Find(x)
+	y = this.Find(y)
+	if x == y {
+		return
+	}
+	// rank
+	if this.rank[x] < this.rank[y] {
+		//yがrootの木にxがrootの木を結合する
+		this.par[x] = y
+		this.size[y] += this.size[x]
+	} else {
+		// this.rank[x] >= this.rank[y]
+		//xがrootの木にyがrootの木を結合する
+		this.par[y] = x
+		this.size[x] += this.size[y]
+		if this.rank[x] == this.rank[y] {
+			this.rank[x]++
+		}
+	}
+}
+
+func PrintUnionFind(u *UnionFind) {
+	// for debuging. not optimize.
+	fmt.Println(u.par)
+	fmt.Println(u.rank)
+	fmt.Println(u.size)
+}

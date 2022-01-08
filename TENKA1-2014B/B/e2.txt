@@ -1,0 +1,7 @@
+5
+eternalstaticfinal
+eternal
+static
+final
+fin
+al
